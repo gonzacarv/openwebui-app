@@ -14,9 +14,15 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val webView = findViewById<WebView>(R.id.webview)
+        val cookieManager = CookieManager.getInstance()
+        cookieManager.setAcceptCookie(true)
+        cookieManager.setAcceptThirdPartyCookies(webView, true)
+
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
+        webView.settings.databaseEnabled = true
         webView.settings.mediaPlaybackRequiresUserGesture = false
+        webView.settings.cacheMode = WebSettings.LOAD_DEFAULT
 
         webView.webViewClient = object : WebViewClient() {
             override fun onReceivedSslError(
