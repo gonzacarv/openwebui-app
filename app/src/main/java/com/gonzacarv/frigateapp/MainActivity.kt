@@ -14,6 +14,10 @@ import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
 
+    private var customView: View? = null
+    private var customViewCallback: WebChromeClient.CustomViewCallback? = null
+    private var originalSystemUiVisibility = 0
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,14 +37,34 @@ class MainActivity : AppCompatActivity() {
         webView.settings.mediaPlaybackRequiresUserGesture = false
         webView.settings.cacheMode = WebSettings.LOAD_DEFAULT
         webView.settings.allowFileAccess = true
+        webView.settings.allowContentAccess = true
 
         webView.webChromeClient = object : WebChromeClient() {
             override fun onShowCustomView(view: View, callback: CustomViewCallback) {
-                view.systemUiVisibility = (
-                    View.SYSTEM_UI_FLAG_FULLSCREEN or
-                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                )
+                if (customView != null) {
+                    callback.onCustomViewHidden()
+                    return
+                }
+                customView = view
+                customViewCallback = callback
+                originalSystemUiVisibility = window.decorView.systemUiVisibility
+
+                val decor = window.decorView as android.widget.FrameLayout
+                decor.addView(view, android.widget.FrameLayout.LayoutParams(
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT
+                ))
+
+                hideSystemUI()
+            }
+
+            override fun onHideCustomView() {
+                val decor = window.decorView as android.widget.FrameLayout
+                customView?.let { decor.removeView(it) }
+                customView = null
+                customViewCallback?.onCustomViewHidden()
+                customViewCallback = null
+                window.decorView.systemUiVisibility = originalSystemUiVisibility
             }
         }
 
@@ -51,6 +75,10 @@ class MainActivity : AppCompatActivity() {
                 error: SslError
             ) {
                 handler.proceed()
+            }
+
+            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+                return false
             }
         }
 
@@ -92,7 +120,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         val webView = findViewById<WebView>(R.id.webview)
-        if (webView.canGoBack()) {
+        if (customView != null) {
+            webView.webChromeClient?.onHideCustomView()
+        } else if (webView.canGoBack()) {
             webView.goBack()
         } else {
             super.onBackPressed()
