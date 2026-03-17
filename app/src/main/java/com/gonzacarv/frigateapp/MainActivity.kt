@@ -23,8 +23,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        hideSystemUI()
-
         val webView = findViewById<WebView>(R.id.webview)
 
         val cookieManager = CookieManager.getInstance()
@@ -55,6 +53,7 @@ class MainActivity : AppCompatActivity() {
                     android.widget.FrameLayout.LayoutParams.MATCH_PARENT
                 ))
 
+                // Solo al ver video en fullscreen se oculta todo
                 hideSystemUI()
             }
 
@@ -102,6 +101,7 @@ class MainActivity : AppCompatActivity() {
         webView.loadUrl("https://192.168.0.100:8971")
     }
 
+    // Solo para fullscreen de video
     private fun hideSystemUI() {
         window.decorView.systemUiVisibility = (
             View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
@@ -115,7 +115,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) hideSystemUI()
+        if (hasFocus && customView != null) hideSystemUI()
     }
 
     override fun onBackPressed() {
