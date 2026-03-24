@@ -1,4 +1,4 @@
-package com.gonzacarv.frigateapp
+package com.gonzacarv.openwebuiapp
 
 import android.annotation.SuppressLint
 import android.app.DownloadManager
@@ -98,7 +98,7 @@ class MainActivity : AppCompatActivity() {
             request.addRequestHeader("Cookie", cookies)
         }
 
-        webView.loadUrl("https://192.168.0.100:8971")
+        webView.loadUrl("http://10.11.12.50:3002/")
     }
 
     // Solo para fullscreen de video
